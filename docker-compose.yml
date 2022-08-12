@@ -45,7 +45,7 @@ services:
       PROJECT_NAME: ${PROJECT_NAME}
       REDIS_HOST: ${REDIS_HOST}
     volumes:
-      - ../src:/app
+      - ./src:/app
     networks:
       - redis-cluster
 
