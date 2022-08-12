@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  redis:
+    container_name: ${PROJECT_NAME}_redis-master
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis-master:/data/db
+    ports:
+      - ${PROJECT_HOST}:6379:6379
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    networks:
+      - redis-cluster
+
+  redis-slave:
+    container_name: ${PROJECT_NAME}_redis-slave
+    image: redis:latest
+    # With password protection
+    # command: redis-server --slaveof redis 6379 --masterauth redis123 --requirepass redis123
+    # Without password protection
+    command: redis-server --slaveof redis 6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - redis-slave:/data/db
+    networks:
+      - redis-cluster
+
+  php:
+    container_name: ${PROJECT_NAME}_php
+    depends_on:
+      redis:
+        condition: service_healthy
+    build:
+      context: ./docker/php
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME}
+      REDIS_HOST: ${REDIS_HOST}
+    volumes:
+      - ../src:/app
+    networks:
+      - redis-cluster
+
+
+networks:
+  redis-cluster:
+    driver: bridge
+
+volumes:
+  redis-master: {}
+  redis-slave: {}

@@ -1,0 +1,16 @@
+{
+    "name": "arch-6/redis-cluster",
+    "authors": [
+        {
+            "name": "SlavaKonashkov"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "": ""
+        }
+    },
+    "require": {
+        "predis/predis": "^1.1"
+    }
+}
